@@ -20,6 +20,7 @@
 
 @protocol EmojiKeyboardViewDelegate <NSObject>
 
+@optional
 /**
  Delegate method called when user taps an emoji button
  @param emojiKeyBoardView EmojiKeyBoardView object on which user has tapped.

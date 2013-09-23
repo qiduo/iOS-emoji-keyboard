@@ -31,6 +31,7 @@
  @param buttonTexts An array of texts to be set on buttons in EmojiPageView
  */
 - (void)setButtonTexts:(NSMutableArray *)buttonTexts;
+- (void)setRecentEmojisButtonTexts:(NSMutableArray *)buttonTexts;
 
 @end
 
