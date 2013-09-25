@@ -14,7 +14,7 @@
 
 @interface EmojiKeyBoardView : UIView
 
-@property (nonatomic, assign) id<EmojiKeyboardViewDelegate> delegate;
+@property (nonatomic, weak) id<EmojiKeyboardViewDelegate> delegate;
 
 @end
 

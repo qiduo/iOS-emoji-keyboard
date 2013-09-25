@@ -14,7 +14,7 @@
 
 @interface EmojiPageView : UIView
 
-@property (nonatomic, assign) id<EmojiPageViewDelegate> delegate;
+@property (nonatomic, weak) id<EmojiPageViewDelegate> delegate;
 
 /**
  Creates and returns an EmojiPageView
@@ -38,6 +38,7 @@
 
 @protocol EmojiPageViewDelegate <NSObject>
 
+@optional
 /**
  Delegate method called when user taps an emoji button
  @param emojiPageView EmojiPageView object on which user has tapped.

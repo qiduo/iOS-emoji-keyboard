@@ -8,8 +8,6 @@
 
 #import "EmojiPageView.h"
 
-#define BACKSPACE_BUTTON_TAG 10
-
 @interface EmojiPageView ()
 
 @property (nonatomic, assign) CGSize buttonSize;
@@ -44,12 +42,7 @@
         }
     }
 }
-/*
- UIButton *button = [self createButtonAtIndex:self.rows * self.columns - 1];
- [button setImage:[UIImage imageNamed:@"backspace_n.png"] forState:UIControlStateNormal];
- button.tag = BACKSPACE_BUTTON_TAG;
- [self addToViewButton:button];
- */
+
 
 - (void)addToViewButton:(UIButton *)button {
 
@@ -67,17 +60,20 @@
 //                + pos * padding
 //                + pos * buttonSize
 
-- (CGFloat)XMarginForButtonInColumn:(NSInteger)column {
-  CGFloat padding = ((CGRectGetWidth(self.bounds) - self.columns * self.buttonSize.width) / self.columns);
-  return (padding / 2 + column * (padding + self.buttonSize.width));
+- (CGFloat)XMarginForButtonInColumn:(NSInteger)column
+{
+    CGFloat padding = ((CGRectGetWidth(self.bounds) - self.columns * self.buttonSize.width) / self.columns);
+    return (padding / 2 + column * (padding + self.buttonSize.width));
 }
 
-- (CGFloat)YMarginForButtonInRow:(NSInteger)rowNumber {
-  CGFloat padding = ((CGRectGetHeight(self.bounds) - self.rows * self.buttonSize.height) / self.rows);
-  return (padding / 2 + rowNumber * (padding + self.buttonSize.height));
+- (CGFloat)YMarginForButtonInRow:(NSInteger)rowNumber
+{
+    CGFloat padding = ((CGRectGetHeight(self.bounds) - self.rows * self.buttonSize.height) / self.rows);
+    return (padding / 2 + rowNumber * (padding + self.buttonSize.height));
 }
 
-- (UIButton *)createButtonAtIndex:(NSUInteger)index {
+- (UIButton *)createButtonAtIndex:(NSUInteger)index
+{
     UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
     button.titleLabel.font = [UIFont fontWithName:@"Apple color emoji" size:BUTTON_FONT_SIZE];
     NSInteger row = (NSInteger)(index / self.columns);
@@ -86,7 +82,6 @@
                                              [self YMarginForButtonInRow:row],
                                              self.buttonSize.width,
                                              self.buttonSize.height));
-//    [button addTarget:self action:@selector(emojiButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
     return button;
 }
 
@@ -103,7 +98,8 @@
     return emoji;
 }
 
-- (id)initWithFrame:(CGRect)frame buttonSize:(CGSize)buttonSize rows:(NSUInteger)rows columns:(NSUInteger)columns {
+- (id)initWithFrame:(CGRect)frame buttonSize:(CGSize)buttonSize rows:(NSUInteger)rows columns:(NSUInteger)columns
+{
     self = [super initWithFrame:frame];
     if (self) {
         self.buttonSize = buttonSize;
@@ -154,18 +150,6 @@
         }
     }
     
-}
-
-- (void)emojiButtonPressed:(UIButton *)button {
-    if (button.tag == BACKSPACE_BUTTON_TAG) {
-        [self.delegate emojiPageViewDidPressBackSpace:self];
-        return;
-    }
-    [self.delegate emojiPageView:self didUseEmoji:button.titleLabel.text];
-}
-
-- (void)dealloc {
-    self.buttons = nil;
 }
 
 @end
