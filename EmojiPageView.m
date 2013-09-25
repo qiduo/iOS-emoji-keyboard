@@ -9,14 +9,15 @@
 #import "EmojiPageView.h"
 
 #define BACKSPACE_BUTTON_TAG 10
-#define BUTTON_FONT_SIZE 32
 
 @interface EmojiPageView ()
 
 @property (nonatomic, assign) CGSize buttonSize;
-@property (nonatomic, retain) NSMutableArray *buttons;
 @property (nonatomic, assign) NSUInteger columns;
 @property (nonatomic, assign) NSUInteger rows;
+@property (nonatomic, strong) NSMutableArray *buttons;
+
+@property (nonatomic, assign) NSInteger previousPopupEmojiIndex;
 
 @end
 
@@ -43,30 +44,12 @@
         }
     }
 }
-
-- (void)setRecentEmojisButtonTexts:(NSMutableArray *)buttonTexts
-{
-    if ([self.buttons count] - 1 == [buttonTexts count]) {
-        for (NSUInteger i = 0; i < [buttonTexts count]; ++i) {
-            [self.buttons[i] setTitle:buttonTexts[i] forState:UIControlStateNormal];
-        }
-    } else {
-        [self.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
-        self.buttons = nil;
-        self.buttons = [NSMutableArray arrayWithCapacity:self.rows * self.columns];
-        for (NSUInteger i = 0; i < [buttonTexts count]; ++i) {
-            UIButton *button = [self createButtonAtIndex:i];
-            [button setTitle:buttonTexts[i] forState:UIControlStateNormal];
-            [self addToViewButton:button];
-        }
-    }
-    if ([buttonTexts count] > 0) {
-        UIButton *button = [self createButtonAtIndex:self.rows * self.columns - 1];
-        [button setImage:[UIImage imageNamed:@"backspace_n.png"] forState:UIControlStateNormal];
-        button.tag = BACKSPACE_BUTTON_TAG;
-        [self addToViewButton:button];
-    }
-}
+/*
+ UIButton *button = [self createButtonAtIndex:self.rows * self.columns - 1];
+ [button setImage:[UIImage imageNamed:@"backspace_n.png"] forState:UIControlStateNormal];
+ button.tag = BACKSPACE_BUTTON_TAG;
+ [self addToViewButton:button];
+ */
 
 - (void)addToViewButton:(UIButton *)button {
 
@@ -95,27 +78,82 @@
 }
 
 - (UIButton *)createButtonAtIndex:(NSUInteger)index {
-  UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
-  button.titleLabel.font = [UIFont fontWithName:@"Apple color emoji" size:BUTTON_FONT_SIZE];
-  NSInteger row = (NSInteger)(index / self.columns);
-  NSInteger column = (NSInteger)(index % self.columns);
-  button.frame = CGRectIntegral(CGRectMake([self XMarginForButtonInColumn:column],
-                                           [self YMarginForButtonInRow:row],
-                                           self.buttonSize.width,
-                                           self.buttonSize.height));
-  [button addTarget:self action:@selector(emojiButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
-  return button;
+    UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+    button.titleLabel.font = [UIFont fontWithName:@"Apple color emoji" size:BUTTON_FONT_SIZE];
+    NSInteger row = (NSInteger)(index / self.columns);
+    NSInteger column = (NSInteger)(index % self.columns);
+    button.frame = CGRectIntegral(CGRectMake([self XMarginForButtonInColumn:column],
+                                             [self YMarginForButtonInRow:row],
+                                             self.buttonSize.width,
+                                             self.buttonSize.height));
+//    [button addTarget:self action:@selector(emojiButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    return button;
+}
+
+- (UIButton *)emojiForPointInEmojiView:(CGPoint)point
+{
+    UIButton *emoji = nil;
+    for (UIButton *button in self.buttons) {
+        CGPoint nativePoint = [button convertPoint:point fromView:self];
+        if ([button pointInside:nativePoint withEvent:nil]) {
+            emoji = button;
+            break;
+        }
+    }
+    return emoji;
 }
 
 - (id)initWithFrame:(CGRect)frame buttonSize:(CGSize)buttonSize rows:(NSUInteger)rows columns:(NSUInteger)columns {
-  self = [super initWithFrame:frame];
-  if (self) {
-    self.buttonSize = buttonSize;
-    self.columns = columns;
-    self.rows = rows;
-    self.buttons = [[[NSMutableArray alloc] initWithCapacity:rows * columns] autorelease];
-  }
-  return self;
+    self = [super initWithFrame:frame];
+    if (self) {
+        self.buttonSize = buttonSize;
+        self.columns = columns;
+        self.rows = rows;
+        self.buttons = [[NSMutableArray alloc] initWithCapacity:rows * columns];
+        UILongPressGestureRecognizer *longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(emojiViewLongPress:)];
+        longPressGestureRecognizer.minimumPressDuration = 0.08f;
+        [self addGestureRecognizer:longPressGestureRecognizer];
+        self.previousPopupEmojiIndex = -1;
+    }
+    return self;
+}
+
+
+- (void)emojiViewLongPress:(UILongPressGestureRecognizer *)longGestureRecognizer
+{
+    if (longGestureRecognizer.state == UIGestureRecognizerStateChanged ||
+        longGestureRecognizer.state == UIGestureRecognizerStateBegan) {
+        NSLog(@"state...change... or begin...");
+        CGPoint touchedLocation = [longGestureRecognizer locationInView:self];
+        UIButton *emoji = [self emojiForPointInEmojiView:touchedLocation];
+        if (!emoji) {
+            if (self.previousPopupEmojiIndex >= 0) {
+                [self.delegate emojiDisablePopup:[self.buttons objectAtIndex:self.previousPopupEmojiIndex]];
+            }
+            return;
+        }
+        NSInteger currentEmojiIndex = [self.buttons indexOfObject:emoji];
+        NSLog(@"in here, current index: %i", currentEmojiIndex);
+        if (self.previousPopupEmojiIndex >= 0 && currentEmojiIndex != self.previousPopupEmojiIndex &&
+            [self.delegate respondsToSelector:@selector(emojiDisablePopup:)]) {
+            [self.delegate emojiDisablePopup:[self.buttons objectAtIndex:self.previousPopupEmojiIndex]];
+        }
+        self.previousPopupEmojiIndex = currentEmojiIndex;
+        if ([self.delegate respondsToSelector:@selector(emojiEnablePopup:)]) {
+            [self.delegate emojiEnablePopup:emoji];
+        }
+        NSLog(@"enable...");
+    }
+    if (longGestureRecognizer.state == UIGestureRecognizerStateEnded ||
+        longGestureRecognizer.state == UIGestureRecognizerStateCancelled) {
+        NSLog(@"....state end..");
+        if (self.previousPopupEmojiIndex >= 0) {
+            UIButton *previousEmoji = [self.buttons objectAtIndex:self.previousPopupEmojiIndex];
+            [self.delegate emojiDisablePopup:previousEmoji];
+            [self.delegate emojiPageView:self didUseEmoji:previousEmoji.titleLabel.text];
+        }
+    }
+    
 }
 
 - (void)emojiButtonPressed:(UIButton *)button {
@@ -127,8 +165,7 @@
 }
 
 - (void)dealloc {
-  self.buttons = nil;
-  [super dealloc];
+    self.buttons = nil;
 }
 
 @end

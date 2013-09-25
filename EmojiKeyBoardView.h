@@ -32,6 +32,6 @@
  Delegate method called when user taps on the backspace button
  @param emojiKeyBoardView EmojiKeyBoardView object on which user has tapped.
  */
-- (void)emojiKeyBoardViewDidPressBackSpace:(EmojiKeyBoardView *)emojiKeyBoardView;
+- (void)emojiKeyBoardViewDidPressBackspaceButton;
 
 @end

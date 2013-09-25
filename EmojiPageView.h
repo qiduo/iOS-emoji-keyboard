@@ -8,6 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
+#define BUTTON_FONT_SIZE 32
+
 @protocol EmojiPageViewDelegate;
 
 @interface EmojiPageView : UIView
@@ -31,7 +33,6 @@
  @param buttonTexts An array of texts to be set on buttons in EmojiPageView
  */
 - (void)setButtonTexts:(NSMutableArray *)buttonTexts;
-- (void)setRecentEmojisButtonTexts:(NSMutableArray *)buttonTexts;
 
 @end
 
@@ -49,5 +50,8 @@
  @param emojiPageView EmojiPageView object on which user has tapped.
  */
 - (void)emojiPageViewDidPressBackSpace:(EmojiPageView *)emojiPageView;
+
+- (void)emojiEnablePopup:(UIButton *)emoji;
+- (void)emojiDisablePopup:(UIButton *)emoji;
 
 @end
