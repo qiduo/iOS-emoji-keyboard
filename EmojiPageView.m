@@ -75,6 +75,7 @@
 - (UIButton *)createButtonAtIndex:(NSUInteger)index
 {
     UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+    button.userInteractionEnabled = NO;
     button.titleLabel.font = [UIFont fontWithName:@"Apple color emoji" size:BUTTON_FONT_SIZE];
     NSInteger row = (NSInteger)(index / self.columns);
     NSInteger column = (NSInteger)(index % self.columns);
@@ -117,9 +118,11 @@
 
 - (void)emojiViewLongPress:(UILongPressGestureRecognizer *)longGestureRecognizer
 {
-    if (longGestureRecognizer.state == UIGestureRecognizerStateChanged ||
-        longGestureRecognizer.state == UIGestureRecognizerStateBegan) {
-        NSLog(@"state...change... or begin...");
+    UIGestureRecognizerState state = longGestureRecognizer.state;
+    if (state == UIGestureRecognizerStateChanged ||
+        state == UIGestureRecognizerStateBegan ||
+        state == UIGestureRecognizerStateCancelled) {
+        
         CGPoint touchedLocation = [longGestureRecognizer locationInView:self];
         UIButton *emoji = [self emojiForPointInEmojiView:touchedLocation];
         if (!emoji) {
@@ -137,19 +140,22 @@
         self.previousPopupEmojiIndex = currentEmojiIndex;
         if ([self.delegate respondsToSelector:@selector(emojiEnablePopup:)]) {
             [self.delegate emojiEnablePopup:emoji];
+            NSLog(@"enable...");
         }
-        NSLog(@"enable...");
-    }
-    if (longGestureRecognizer.state == UIGestureRecognizerStateEnded ||
-        longGestureRecognizer.state == UIGestureRecognizerStateCancelled) {
-        NSLog(@"....state end..");
+        if (state == UIGestureRecognizerStateCancelled) {
+        }
+    } else if (state == UIGestureRecognizerStateEnded) {
+        if (state == UIGestureRecognizerStateEnded) {
+            NSLog(@"ended.....");
+        } else {
+            NSLog(@"...cancelled...");
+        }
         if (self.previousPopupEmojiIndex >= 0) {
             UIButton *previousEmoji = [self.buttons objectAtIndex:self.previousPopupEmojiIndex];
             [self.delegate emojiDisablePopup:previousEmoji];
             [self.delegate emojiPageView:self didUseEmoji:previousEmoji.titleLabel.text];
         }
     }
-    
 }
 
 @end

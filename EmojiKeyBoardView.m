@@ -12,7 +12,7 @@
 
 #define BUTTON_WIDTH 45
 #define BUTTON_HEIGHT 37
-#define HighlightedEmojiViewHeight 80.f
+#define HighlightedEmojiViewHeight 70.f
 #define HighlightedEmojiViewWidth  76.f
 #define BackspaceButtonHeight 45.f
 
@@ -29,7 +29,7 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
 @interface QDPopupEmojiView : UIView
 
 @property (nonatomic, strong) UIImageView *backgroundImageView;
-@property (nonatomic, strong) UIButton *popupEmoji;
+@property (nonatomic, strong) UILabel *popupEmoji;
 
 @end
 
@@ -40,10 +40,11 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
     self = [super initWithFrame:frame];
     if (self) {
         self.backgroundImageView = [[UIImageView alloc] initWithFrame:self.bounds];
-        self.backgroundImageView.image = [UIImage imageNamed:@"bg-emoji-highlighted"];
-        self.popupEmoji = [UIButton buttonWithType:UIButtonTypeCustom];
-        
-        self.popupEmoji.frame = self.bounds;
+        self.backgroundImageView.image = [UIImage imageNamed:@"bg-emoji-popup"];
+        self.popupEmoji = [[UILabel alloc] initWithFrame:CGRectZero];
+        self.popupEmoji.backgroundColor = [UIColor clearColor];
+        self.popupEmoji.textAlignment = NSTextAlignmentCenter;
+        self.popupEmoji.font = [UIFont fontWithName:@"Apple color emoji" size:BUTTON_FONT_SIZE];
         [self addSubview:self.backgroundImageView];
         [self addSubview:self.popupEmoji];
     }
@@ -54,7 +55,7 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
 {
     self.backgroundImageView.frame = self.bounds;
     CGFloat xOffset = (self.bounds.size.width - BUTTON_WIDTH) * 0.5f;
-    self.popupEmoji.frame = CGRectMake(xOffset, 15.f, BUTTON_WIDTH, BUTTON_HEIGHT);
+    self.popupEmoji.frame = CGRectMake(xOffset, 18.f, BUTTON_WIDTH, BUTTON_HEIGHT);
 }
 
 @end
@@ -85,6 +86,8 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
 @property (nonatomic, strong) NSString *category;
 
 @property (nonatomic, strong) QDPopupEmojiView *popupEmojiView;
+
+@property (nonatomic, strong) UILabel *testLabel;
 
 @end
 
@@ -158,9 +161,8 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
         self.backspaceButton = [UIButton buttonWithType:UIButtonTypeCustom];
         self.backspaceButton.frame = CGRectMake(segmentsBarFrame.origin.x + segmentsBarFrame.size.width, 0.f, BackspaceButtonHeight, segmentsBarFrame.size.height);
         [self.backspaceButton addTarget:self action:@selector(backspaceButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
-        [self.backspaceButton setImage:[UIImage imageNamed:@"btn-backspace"] forState:UIControlStateNormal];
-        
-        self.backspaceButton.backgroundColor = [UIColor lightGrayColor];
+        [self.backspaceButton setImage:[UIImage imageNamed:@"btn-backspace-normal"] forState:UIControlStateNormal];
+        [self.backspaceButton setImage:[UIImage imageNamed:@"btn-backspace-highlighted"] forState:UIControlStateHighlighted];
         [self addSubview:self.backspaceButton];
 
         self.pageControl = [[DDPageControl alloc] initWithType:DDPageControlTypeOnFullOffFull];
@@ -197,7 +199,8 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
     return self;
 }
 
-- (void)dealloc {
+- (void)dealloc
+{
     self.pageControl = nil;
     self.scrollView = nil;
     self.segmentsBar = nil;
@@ -213,7 +216,8 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
     }
 }
 
-- (void)layoutSubviews {
+- (void)layoutSubviews
+{
     CGRect segmentBarFrame = self.segmentsBar.frame;
     self.backspaceButton.frame = CGRectMake(segmentBarFrame.origin.x + segmentBarFrame.size.width, 0.f, BackspaceButtonHeight, segmentBarFrame.size.height);
     
@@ -302,15 +306,15 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
 
 // Check if setting pageView for an index is required
 - (BOOL)requireToSetPageViewForIndex:(NSUInteger)index {
-  if (index >= self.pageControl.numberOfPages) {
-    return NO;
-  }
-  for (EmojiPageView *page in self.pageViews) {
-    if ((page.frame.origin.x / CGRectGetWidth(self.scrollView.bounds)) == index) {
-      return NO;
+    if (index >= self.pageControl.numberOfPages) {
+        return NO;
     }
-  }
-  return YES;
+    for (EmojiPageView *page in self.pageViews) {
+        if ((page.frame.origin.x / CGRectGetWidth(self.scrollView.bounds)) == index) {
+            return NO;
+        }
+    }
+    return YES;
 }
 
 // Create a pageView and add it to the scroll view.
@@ -346,7 +350,8 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
 }
 
 
-- (void)setEmojiPageViewInScrollView:(UIScrollView *)scrollView atIndex:(NSUInteger)index {
+- (void)setEmojiPageViewInScrollView:(UIScrollView *)scrollView atIndex:(NSUInteger)index
+{
     if (![self requireToSetPageViewForIndex:index]) {
         return;
     }
@@ -453,7 +458,7 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
     frame.size.width = HighlightedEmojiViewWidth;
     self.popupEmojiView.frame = frame;
     self.popupEmojiView.hidden = NO;
-    [self.popupEmojiView.popupEmoji setTitle:emoji.titleLabel.text forState:UIControlStateNormal];
+    self.popupEmojiView.popupEmoji.text = emoji.titleLabel.text;
 }
 
 - (void)emojiDisablePopup:(UIButton *)emoji
