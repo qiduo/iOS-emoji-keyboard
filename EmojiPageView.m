@@ -10,46 +10,44 @@
 
 @interface EmojiPageView ()
 
-@property (nonatomic, assign) CGSize buttonSize;
+@property (nonatomic, assign) CGSize emojiSize;
 @property (nonatomic, assign) NSUInteger columns;
 @property (nonatomic, assign) NSUInteger rows;
-@property (nonatomic, strong) NSMutableArray *buttons;
+@property (nonatomic, strong) NSMutableArray *emojis;
 
 @property (nonatomic, assign) NSInteger previousPopupEmojiIndex;
 
 @end
 
 @implementation EmojiPageView
-@synthesize buttonSize = buttonSize_;
-@synthesize buttons = buttons_;
+@synthesize emojiSize = emojiSize_;
+@synthesize emojis = emojis_;
 @synthesize columns = columns_;
 @synthesize rows = rows_;
 @synthesize delegate = delegate_;
 
-- (void)setButtonTexts:(NSMutableArray *)buttonTexts {
-    if (([self.buttons count] - 1) == [buttonTexts count]) {
-        for (NSUInteger i = 0; i < [buttonTexts count]; ++i) {
-            [self.buttons[i] setTitle:buttonTexts[i] forState:UIControlStateNormal];
+- (void)setEmojiTexts:(NSMutableArray *)emojiTexts {
+    if ([self.emojis count] == [emojiTexts count]) {
+        for (NSUInteger i = 0; i < [emojiTexts count]; ++i) {
+            UILabel *emoji = self.emojis[i];
+            emoji.text = emojiTexts[i];
         }
     } else {
         [self.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
-        self.buttons = nil;
-        self.buttons = [NSMutableArray arrayWithCapacity:self.rows * self.columns];
-        for (NSUInteger i = 0; i < [buttonTexts count]; ++i) {
-            UIButton *button = [self createButtonAtIndex:i];
-            [button setTitle:buttonTexts[i] forState:UIControlStateNormal];
-            [self addToViewButton:button];
+        self.emojis = nil;
+        self.emojis = [NSMutableArray arrayWithCapacity:self.rows * self.columns];
+        for (NSUInteger i = 0; i < [emojiTexts count]; ++i) {
+            UILabel *emoji = [self createEmojiAtIndex:i];
+            emoji.text = emojiTexts[i];
+            [self addToEmojiPageView:emoji];
         }
     }
 }
 
 
-- (void)addToViewButton:(UIButton *)button {
-
-  NSAssert(button != nil, @"Button to be added is nil");
-
-  [self.buttons addObject:button];
-  [self addSubview:button];
+- (void)addToEmojiPageView:(UIView *)emoji {
+    [self.emojis addObject:emoji];
+    [self addSubview:emoji];
 }
 
 // Padding is the expected space between two buttons.
@@ -60,53 +58,55 @@
 //                + pos * padding
 //                + pos * buttonSize
 
-- (CGFloat)XMarginForButtonInColumn:(NSInteger)column
+- (CGFloat)XMarginForEmojiInColumn:(NSInteger)column
 {
-    CGFloat padding = ((CGRectGetWidth(self.bounds) - self.columns * self.buttonSize.width) / self.columns);
-    return (padding / 2 + column * (padding + self.buttonSize.width));
+    CGFloat padding = ((CGRectGetWidth(self.bounds) - self.columns * self.emojiSize.width) / self.columns);
+    return (padding / 2 + column * (padding + self.emojiSize.width));
 }
 
-- (CGFloat)YMarginForButtonInRow:(NSInteger)rowNumber
+- (CGFloat)YMarginForEmojiInRow:(NSInteger)rowNumber
 {
-    CGFloat padding = ((CGRectGetHeight(self.bounds) - self.rows * self.buttonSize.height) / self.rows);
-    return (padding / 2 + rowNumber * (padding + self.buttonSize.height));
+    CGFloat padding = ((CGRectGetHeight(self.bounds) - self.rows * self.emojiSize.height) / self.rows);
+    return (padding / 2 + rowNumber * (padding + self.emojiSize.height));
 }
 
-- (UIButton *)createButtonAtIndex:(NSUInteger)index
+- (UILabel *)createEmojiAtIndex:(NSUInteger)index
 {
-    UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
-    button.userInteractionEnabled = NO;
-    button.titleLabel.font = [UIFont fontWithName:@"Apple color emoji" size:BUTTON_FONT_SIZE];
+    UILabel *emoji = [[UILabel alloc] initWithFrame:CGRectZero];
+    emoji.userInteractionEnabled = NO;
+    emoji.font = [UIFont fontWithName:@"Apple color emoji" size:BUTTON_FONT_SIZE];
+    emoji.backgroundColor = [UIColor clearColor];
+    emoji.textAlignment = NSTextAlignmentCenter;
     NSInteger row = (NSInteger)(index / self.columns);
     NSInteger column = (NSInteger)(index % self.columns);
-    button.frame = CGRectIntegral(CGRectMake([self XMarginForButtonInColumn:column],
-                                             [self YMarginForButtonInRow:row],
-                                             self.buttonSize.width,
-                                             self.buttonSize.height));
-    return button;
-}
-
-- (UIButton *)emojiForPointInEmojiView:(CGPoint)point
-{
-    UIButton *emoji = nil;
-    for (UIButton *button in self.buttons) {
-        CGPoint nativePoint = [button convertPoint:point fromView:self];
-        if ([button pointInside:nativePoint withEvent:nil]) {
-            emoji = button;
-            break;
-        }
-    }
+    emoji.frame = CGRectIntegral(CGRectMake([self XMarginForEmojiInColumn:column],
+                                             [self YMarginForEmojiInRow:row],
+                                             self.emojiSize.width,
+                                             self.emojiSize.height));
     return emoji;
 }
 
-- (id)initWithFrame:(CGRect)frame buttonSize:(CGSize)buttonSize rows:(NSUInteger)rows columns:(NSUInteger)columns
+- (UILabel *)emojiForPointInEmojiPageView:(CGPoint)point
+{
+    UILabel *emojiToFind = nil;
+    for (UILabel *emoji in self.emojis) {
+        CGPoint nativePoint = [emoji convertPoint:point fromView:self];
+        if ([emoji pointInside:nativePoint withEvent:nil]) {
+            emojiToFind = emoji;
+            break;
+        }
+    }
+    return emojiToFind;
+}
+
+- (id)initWithFrame:(CGRect)frame emojiSize:(CGSize)emojiSize rows:(NSUInteger)rows columns:(NSUInteger)columns
 {
     self = [super initWithFrame:frame];
     if (self) {
-        self.buttonSize = buttonSize;
+        self.emojiSize = emojiSize;
         self.columns = columns;
         self.rows = rows;
-        self.buttons = [[NSMutableArray alloc] initWithCapacity:rows * columns];
+        self.emojis = [[NSMutableArray alloc] initWithCapacity:rows * columns];
         UILongPressGestureRecognizer *longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(emojiViewLongPress:)];
         longPressGestureRecognizer.minimumPressDuration = 0.08f;
         [self addGestureRecognizer:longPressGestureRecognizer];
@@ -120,40 +120,29 @@
 {
     UIGestureRecognizerState state = longGestureRecognizer.state;
     if (state == UIGestureRecognizerStateChanged ||
-        state == UIGestureRecognizerStateBegan ||
-        state == UIGestureRecognizerStateCancelled) {
-        
+        state == UIGestureRecognizerStateBegan) {
         CGPoint touchedLocation = [longGestureRecognizer locationInView:self];
-        UIButton *emoji = [self emojiForPointInEmojiView:touchedLocation];
+        UILabel *emoji = [self emojiForPointInEmojiPageView:touchedLocation];
         if (!emoji) {
             if (self.previousPopupEmojiIndex >= 0) {
-                [self.delegate emojiDisablePopup:[self.buttons objectAtIndex:self.previousPopupEmojiIndex]];
+                [self.delegate emojiDisablePopup:[self.emojis objectAtIndex:self.previousPopupEmojiIndex]];
             }
             return;
         }
-        NSInteger currentEmojiIndex = [self.buttons indexOfObject:emoji];
-        NSLog(@"in here, current index: %i", currentEmojiIndex);
+        NSInteger currentEmojiIndex = [self.emojis indexOfObject:emoji];
         if (self.previousPopupEmojiIndex >= 0 && currentEmojiIndex != self.previousPopupEmojiIndex &&
             [self.delegate respondsToSelector:@selector(emojiDisablePopup:)]) {
-            [self.delegate emojiDisablePopup:[self.buttons objectAtIndex:self.previousPopupEmojiIndex]];
+            [self.delegate emojiDisablePopup:[self.emojis objectAtIndex:self.previousPopupEmojiIndex]];
         }
         self.previousPopupEmojiIndex = currentEmojiIndex;
         if ([self.delegate respondsToSelector:@selector(emojiEnablePopup:)]) {
             [self.delegate emojiEnablePopup:emoji];
-            NSLog(@"enable...");
-        }
-        if (state == UIGestureRecognizerStateCancelled) {
         }
     } else if (state == UIGestureRecognizerStateEnded) {
-        if (state == UIGestureRecognizerStateEnded) {
-            NSLog(@"ended.....");
-        } else {
-            NSLog(@"...cancelled...");
-        }
         if (self.previousPopupEmojiIndex >= 0) {
-            UIButton *previousEmoji = [self.buttons objectAtIndex:self.previousPopupEmojiIndex];
+            UILabel *previousEmoji = [self.emojis objectAtIndex:self.previousPopupEmojiIndex];
             [self.delegate emojiDisablePopup:previousEmoji];
-            [self.delegate emojiPageView:self didUseEmoji:previousEmoji.titleLabel.text];
+            [self.delegate emojiPageView:self didUseEmoji:previousEmoji.text];
         }
     }
 }

@@ -25,14 +25,14 @@
 
  @return An instance of EmojiPageView
  */
-- (id)initWithFrame:(CGRect)frame buttonSize:(CGSize)buttonSize rows:(NSUInteger)rows columns:(NSUInteger)columns;
+- (id)initWithFrame:(CGRect)frame emojiSize:(CGSize)emojiSize rows:(NSUInteger)rows columns:(NSUInteger)columns;
 
 /**
  Sets texts on buttons in the EmojiPageView.
 
  @param buttonTexts An array of texts to be set on buttons in EmojiPageView
  */
-- (void)setButtonTexts:(NSMutableArray *)buttonTexts;
+- (void)setEmojiTexts:(NSMutableArray *)emojiTexts;
 
 @end
 
@@ -52,7 +52,7 @@
  */
 - (void)emojiPageViewDidPressBackSpace:(EmojiPageView *)emojiPageView;
 
-- (void)emojiEnablePopup:(UIButton *)emoji;
-- (void)emojiDisablePopup:(UIButton *)emoji;
+- (void)emojiEnablePopup:(UILabel *)emoji;
+- (void)emojiDisablePopup:(UILabel *)emoji;
 
 @end

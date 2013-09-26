@@ -12,9 +12,9 @@
 
 #define BUTTON_WIDTH 45
 #define BUTTON_HEIGHT 37
-#define HighlightedEmojiViewHeight 70.f
+#define HighlightedEmojiViewHeight 108.f
 #define HighlightedEmojiViewWidth  76.f
-#define BackspaceButtonHeight 45.f
+#define BackspaceButtonWidth       45.f
 
 #define DEFAULT_SELECTED_SEGMENT 0
 #define PAGE_CONTROL_INDICATOR_DIAMETER 6.0
@@ -141,7 +141,8 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
                                                                        [UIImage imageNamed:@"btn-car-normal"],
                                                                        [UIImage imageNamed:@"btn-characters-normal"],
                                                                        ]];
-        CGRect segmentsBarFrame = CGRectMake(0, 0, CGRectGetWidth(self.bounds) - BackspaceButtonHeight, CGRectGetHeight(self.segmentsBar.bounds));
+        
+        CGRect segmentsBarFrame = CGRectMake(0, 0, CGRectGetWidth(self.bounds) - BackspaceButtonWidth, CGRectGetHeight(self.segmentsBar.bounds));
         self.segmentsBar.frame = segmentsBarFrame;
         self.segmentsBar.segmentedControlStyle = UISegmentedControlStyleBar;
         self.segmentsBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -159,10 +160,11 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
         [self addSubview:self.segmentsBar];
         
         self.backspaceButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        self.backspaceButton.frame = CGRectMake(segmentsBarFrame.origin.x + segmentsBarFrame.size.width, 0.f, BackspaceButtonHeight, segmentsBarFrame.size.height);
+        self.backspaceButton.frame = CGRectMake(segmentsBarFrame.origin.x + segmentsBarFrame.size.width, 0.f, BackspaceButtonWidth, segmentsBarFrame.size.height);
         [self.backspaceButton addTarget:self action:@selector(backspaceButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
-        [self.backspaceButton setImage:[UIImage imageNamed:@"btn-backspace-normal"] forState:UIControlStateNormal];
-        [self.backspaceButton setImage:[UIImage imageNamed:@"btn-backspace-highlighted"] forState:UIControlStateHighlighted];
+        [self.backspaceButton setBackgroundImage:[UIImage imageNamed:@"btn-backspace-normal"] forState:UIControlStateNormal];
+        [self.backspaceButton setBackgroundImage:[UIImage imageNamed:@"btn-backspace-highlighted"] forState:UIControlStateHighlighted];
+        
         [self addSubview:self.backspaceButton];
 
         self.pageControl = [[DDPageControl alloc] initWithType:DDPageControlTypeOnFullOffFull];
@@ -193,7 +195,8 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
         
         [self addSubview:self.scrollView];
         
-        self.popupEmojiView = [[QDPopupEmojiView alloc] initWithFrame:CGRectZero];
+        self.popupEmojiView = [[QDPopupEmojiView alloc] initWithFrame:CGRectMake(0.f, 90.f, HighlightedEmojiViewWidth, HighlightedEmojiViewHeight)];
+        self.popupEmojiView.hidden = YES;
         [self addSubview:self.popupEmojiView];
     }
     return self;
@@ -218,8 +221,8 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
 
 - (void)layoutSubviews
 {
-    CGRect segmentBarFrame = self.segmentsBar.frame;
-    self.backspaceButton.frame = CGRectMake(segmentBarFrame.origin.x + segmentBarFrame.size.width, 0.f, BackspaceButtonHeight, segmentBarFrame.size.height);
+    CGRect segmentsBarFrame = self.segmentsBar.frame;
+    self.backspaceButton.frame = CGRectMake(segmentsBarFrame.origin.x + segmentsBarFrame.size.width, 0.f, BackspaceButtonWidth, segmentsBarFrame.size.height);
     
     CGSize pageControlSize = [self.pageControl sizeForNumberOfPages:3];
     NSUInteger numberOfPages = [self numberOfPagesForCategory:self.category
@@ -233,7 +236,7 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
                                                      CGRectGetHeight(self.bounds) - pageControlSize.height,
                                                      pageControlSize.width,
                                                      pageControlSize.height));
-
+    
     self.scrollView.frame = CGRectMake(0,
                                      CGRectGetHeight(self.segmentsBar.bounds),
                                      CGRectGetWidth(self.bounds),
@@ -322,7 +325,7 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
     NSUInteger rows = [self numberOfRowsForFrameSize:self.scrollView.bounds.size];
     NSUInteger columns = [self numberOfColumnsForFrameSize:self.scrollView.bounds.size];
     EmojiPageView *pageView = [[EmojiPageView alloc] initWithFrame:
-                               CGRectMake(0, 0, CGRectGetWidth(self.scrollView.bounds), CGRectGetHeight(self.scrollView.bounds)) buttonSize:CGSizeMake(BUTTON_WIDTH, BUTTON_HEIGHT) rows:rows columns:columns];
+                               CGRectMake(0, 0, CGRectGetWidth(self.scrollView.bounds), CGRectGetHeight(self.scrollView.bounds)) emojiSize:CGSizeMake(BUTTON_WIDTH, BUTTON_HEIGHT) rows:rows columns:columns];
     pageView.delegate = self;
     [self.pageViews addObject:pageView];
     [self.scrollView addSubview:pageView];
@@ -361,10 +364,10 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
     NSUInteger numberOfEmojisPerPage = [self numberOfEmojisPerPage:scrollView.bounds.size];
     NSUInteger startingIndex = index * numberOfEmojisPerPage;
     NSUInteger endingIndex = startingIndex + numberOfEmojisPerPage;
-    NSMutableArray *buttonTexts = [self emojiTextsForCategory:self.category
+    NSMutableArray *emojiTexts = [self emojiTextsForCategory:self.category
                                                   fromIndex:startingIndex
                                                     toIndex:endingIndex];
-    [pageView setButtonTexts:buttonTexts];
+    [pageView setEmojiTexts:emojiTexts];
     pageView.frame = CGRectMake(index * CGRectGetWidth(scrollView.bounds), 0, CGRectGetWidth(scrollView.bounds), CGRectGetHeight(scrollView.bounds));
 }
 
@@ -448,20 +451,19 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
     [self.delegate emojiKeyBoardView:self didUseEmoji:emoji];
 }
 
-- (void)emojiEnablePopup:(UIButton *)emoji
+- (void)emojiEnablePopup:(UILabel *)emoji
 {
     emoji.hidden = YES;
-    CGRect frame = emoji.frame;
-    frame.origin.y = frame.origin.y + BUTTON_WIDTH - HighlightedEmojiViewHeight;
-    frame.origin.x -= (HighlightedEmojiViewWidth - BUTTON_WIDTH) * 0.5f;
-    frame.size.height += HighlightedEmojiViewHeight;
-    frame.size.width = HighlightedEmojiViewWidth;
-    self.popupEmojiView.frame = frame;
+    CGPoint origin = emoji.frame.origin;
+    CGRect emojiFrame = self.popupEmojiView.frame;
+    emojiFrame.origin.x = origin.x - (HighlightedEmojiViewWidth - BUTTON_WIDTH) * 0.5f;
+    emojiFrame.origin.y = origin.y + 2 * BUTTON_HEIGHT - HighlightedEmojiViewHeight;
     self.popupEmojiView.hidden = NO;
-    self.popupEmojiView.popupEmoji.text = emoji.titleLabel.text;
+    self.popupEmojiView.frame = emojiFrame;
+    self.popupEmojiView.popupEmoji.text = emoji.text;
 }
 
-- (void)emojiDisablePopup:(UIButton *)emoji
+- (void)emojiDisablePopup:(UILabel *)emoji
 {
     emoji.hidden = NO;
     self.popupEmojiView.hidden = YES;
