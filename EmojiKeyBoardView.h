@@ -12,7 +12,7 @@
 
 @protocol EmojiKeyboardViewDelegate;
 
-@interface EmojiKeyBoardView : UIView
+@interface EmojiKeyBoardView : UIView <UIInputViewAudioFeedback>
 
 @property (nonatomic, weak) id<EmojiKeyboardViewDelegate> delegate;
 

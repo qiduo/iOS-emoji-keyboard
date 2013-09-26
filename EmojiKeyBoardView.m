@@ -126,6 +126,11 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
     [[NSUserDefaults standardUserDefaults] setObject:recentEmojis forKey:RecentUsedEmojiCharactersKey];
 }
 
+- (BOOL)enableInputClicksWhenVisible
+{
+    return YES;
+}
+
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -214,6 +219,7 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
 
 - (void)backspaceButtonPressed:(UIButton *)sender
 {
+    [[UIDevice currentDevice] playInputClick];
     if ([self.delegate respondsToSelector:@selector(emojiKeyBoardViewDidPressBackspaceButton)]) {
         [self.delegate emojiKeyBoardViewDidPressBackspaceButton];
     }
@@ -273,8 +279,11 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
 }
 
 - (void)categoryChangedViaSegmentsBar:(UISegmentedControl *)sender {
+    
+    [[UIDevice currentDevice] playInputClick];
+    
     NSArray *categoryList = @[segmentRecentName, @"People", @"Objects", @"Nature", @"Places", @"Symbols"];
-
+    
     self.category = categoryList[sender.selectedSegmentIndex];
     [self setSelectedCategoryImageInSegmentControl:sender AtIndex:sender.selectedSegmentIndex];
     
@@ -448,6 +457,7 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
 - (void)emojiPageView:(EmojiPageView *)emojiPageView didUseEmoji:(NSString *)emoji
 {
     [self setInRecentsEmoji:emoji];
+    [[UIDevice currentDevice] playInputClick];
     [self.delegate emojiKeyBoardView:self didUseEmoji:emoji];
 }
 
