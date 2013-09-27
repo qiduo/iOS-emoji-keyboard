@@ -15,7 +15,7 @@
 @property (nonatomic, assign) NSUInteger rows;
 @property (nonatomic, strong) NSMutableArray *emojis;
 
-@property (nonatomic, assign) NSInteger previousPopupEmojiIndex;
+@property (nonatomic, strong) UILabel *previousEmoji;
 
 @end
 
@@ -108,9 +108,9 @@
         self.rows = rows;
         self.emojis = [[NSMutableArray alloc] initWithCapacity:rows * columns];
         UILongPressGestureRecognizer *longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(emojiViewLongPress:)];
-        longPressGestureRecognizer.minimumPressDuration = 0.08f;
+        longPressGestureRecognizer.minimumPressDuration = 0.04f;
         [self addGestureRecognizer:longPressGestureRecognizer];
-        self.previousPopupEmojiIndex = -1;
+        self.previousEmoji = nil;
     }
     return self;
 }
@@ -124,25 +124,22 @@
         CGPoint touchedLocation = [longGestureRecognizer locationInView:self];
         UILabel *emoji = [self emojiForPointInEmojiPageView:touchedLocation];
         if (!emoji) {
-            if (self.previousPopupEmojiIndex >= 0) {
-                [self.delegate emojiDisablePopup:[self.emojis objectAtIndex:self.previousPopupEmojiIndex]];
+            if (self.previousEmoji) {
+                [self.delegate emojiDisablePopup:self.previousEmoji];
             }
             return;
         }
-        NSInteger currentEmojiIndex = [self.emojis indexOfObject:emoji];
-        if (self.previousPopupEmojiIndex >= 0 && currentEmojiIndex != self.previousPopupEmojiIndex &&
-            [self.delegate respondsToSelector:@selector(emojiDisablePopup:)]) {
-            [self.delegate emojiDisablePopup:[self.emojis objectAtIndex:self.previousPopupEmojiIndex]];
+        if (self.previousEmoji && self.previousEmoji != emoji) {
+            [self.delegate emojiDisablePopup:self.previousEmoji];
         }
-        self.previousPopupEmojiIndex = currentEmojiIndex;
+        self.previousEmoji = emoji;
         if ([self.delegate respondsToSelector:@selector(emojiEnablePopup:)]) {
             [self.delegate emojiEnablePopup:emoji];
         }
     } else if (state == UIGestureRecognizerStateEnded) {
-        if (self.previousPopupEmojiIndex >= 0) {
-            UILabel *previousEmoji = [self.emojis objectAtIndex:self.previousPopupEmojiIndex];
-            [self.delegate emojiDisablePopup:previousEmoji];
-            [self.delegate emojiPageView:self didUseEmoji:previousEmoji.text];
+        if (self.previousEmoji) {
+            [self.delegate emojiDisablePopup:self.previousEmoji];
+            [self.delegate emojiPageView:self didUseEmoji:self.previousEmoji.text];
         }
     }
 }

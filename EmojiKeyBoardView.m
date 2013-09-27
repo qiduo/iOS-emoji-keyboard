@@ -227,6 +227,15 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
 
 - (void)layoutSubviews
 {
+    CGRect keyboardFrame = self.frame;
+    keyboardFrame.size.width = self.bounds.size.width;
+    if (UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
+        keyboardFrame.size.height = EmojiKeyboardLandscapeHeight;
+    } else {
+        keyboardFrame.size.height = EmojiKeyboardPortraitHeight;
+    }
+    self.frame = keyboardFrame;
+    
     CGRect segmentsBarFrame = self.segmentsBar.frame;
     self.backspaceButton.frame = CGRectMake(segmentsBarFrame.origin.x + segmentsBarFrame.size.width, 0.f, BackspaceButtonWidth, segmentsBarFrame.size.height);
     
@@ -456,9 +465,9 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
 
 - (void)emojiPageView:(EmojiPageView *)emojiPageView didUseEmoji:(NSString *)emoji
 {
-    [self setInRecentsEmoji:emoji];
     [[UIDevice currentDevice] playInputClick];
     [self.delegate emojiKeyBoardView:self didUseEmoji:emoji];
+    [self setInRecentsEmoji:emoji];
 }
 
 - (void)emojiEnablePopup:(UILabel *)emoji

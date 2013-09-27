@@ -10,6 +10,9 @@
 
 #import <UIKit/UIKit.h>
 
+#define EmojiKeyboardPortraitHeight 216.f
+#define EmojiKeyboardLandscapeHeight 162.f
+
 @protocol EmojiKeyboardViewDelegate;
 
 @interface EmojiKeyBoardView : UIView <UIInputViewAudioFeedback>
