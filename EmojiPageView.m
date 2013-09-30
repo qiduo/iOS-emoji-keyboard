@@ -73,7 +73,7 @@
 - (UILabel *)createEmojiAtIndex:(NSUInteger)index
 {
     UILabel *emoji = [[UILabel alloc] initWithFrame:CGRectZero];
-    emoji.userInteractionEnabled = NO;
+    emoji.userInteractionEnabled = YES;
     emoji.font = [UIFont fontWithName:@"Apple color emoji" size:BUTTON_FONT_SIZE];
     emoji.backgroundColor = [UIColor clearColor];
     emoji.textAlignment = NSTextAlignmentCenter;
@@ -83,6 +83,8 @@
                                              [self YMarginForEmojiInRow:row],
                                              self.emojiSize.width,
                                              self.emojiSize.height));
+    UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapEmoji:)];
+    [emoji addGestureRecognizer:tapGestureRecognizer];
     return emoji;
 }
 
@@ -108,13 +110,33 @@
         self.rows = rows;
         self.emojis = [[NSMutableArray alloc] initWithCapacity:rows * columns];
         UILongPressGestureRecognizer *longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(emojiViewLongPress:)];
-        longPressGestureRecognizer.minimumPressDuration = 0.04f;
+        longPressGestureRecognizer.minimumPressDuration = 0.2f;
         [self addGestureRecognizer:longPressGestureRecognizer];
         self.previousEmoji = nil;
     }
     return self;
 }
 
+- (void)tapEmoji:(UITapGestureRecognizer *)sender
+{
+    UIGestureRecognizerState state = sender.state;
+    UILabel *emoji = (UILabel *)sender.view;
+    
+    if (state == UIGestureRecognizerStateEnded) {
+        if ([self.delegate respondsToSelector:@selector(emojiEnablePopup:)]) {
+            [self.delegate emojiEnablePopup:emoji];
+        }
+        [self performSelector:@selector(_disablePopup:) withObject:emoji afterDelay:0.1f];
+    }
+}
+
+- (void)_disablePopup:(UILabel *)emoji
+{
+    if ([self.delegate respondsToSelector:@selector(emojiDisablePopup:)]) {
+        [self.delegate emojiDisablePopup:emoji];
+        [self.delegate emojiPageView:self didUseEmoji:emoji.text];
+    }
+}
 
 - (void)emojiViewLongPress:(UILongPressGestureRecognizer *)longGestureRecognizer
 {
