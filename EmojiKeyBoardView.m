@@ -216,31 +216,27 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
 
 - (void)adjustSegmentsBar
 {
-    UIImage *separator;
-    UIImage *corner_left;
-    UIImage *corner_right;
-    UIImage *bg_unselected;
-    UIImage *bg_tab;
+    UIImage *separator = [UIImage imageNamed:@"bg-icons-separator"];
+    UIImage *cornerLeft = [UIImage imageNamed:@"bg-corner-left"];
+    UIImage *cornerRight = [UIImage imageNamed:@"bg-corner-right"];
+    UIImage *bgUnselected = [UIImage imageNamed:@"bg-unselected-center"];
+    UIImage *bgTab = [UIImage imageNamed:@"bg-tab"];
     
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 70000
     if ([UIImage instancesRespondToSelector:@selector(imageWithRenderingMode:)]) {
-        separator = [[UIImage imageNamed:@"bg-icons-separator"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-        corner_left = [[UIImage imageNamed:@"bg-corner-left"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-        corner_right = [[UIImage imageNamed:@"bg-corner-right"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-        bg_unselected = [[UIImage imageNamed:@"bg-unselected-center"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-        bg_tab = [[UIImage imageNamed:@"bg-tab"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-    } else {
-        separator = [UIImage imageNamed:@"bg-icons-separator"];
-        corner_left = [UIImage imageNamed:@"bg-corner-left"];
-        corner_right = [UIImage imageNamed:@"bg-corner-right"];
-        bg_unselected = [UIImage imageNamed:@"bg-unselected-center"];
-        bg_tab = [UIImage imageNamed:@"bg-tab"];
+        separator = [separator imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        cornerLeft = [cornerLeft imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        cornerRight = [cornerRight imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        bgUnselected = [bgUnselected imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        bgTab = [bgTab imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
     }
+#endif
     
     [self.segmentsBar setDividerImage:separator forLeftSegmentState:UIControlStateNormal rightSegmentState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
-    [self.segmentsBar setDividerImage:corner_left forLeftSegmentState:UIControlStateNormal rightSegmentState:UIControlStateSelected barMetrics:UIBarMetricsDefault];
-    [self.segmentsBar setDividerImage:corner_right forLeftSegmentState:UIControlStateSelected rightSegmentState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
-    [self.segmentsBar setBackgroundImage:bg_unselected forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
-    [self.segmentsBar setBackgroundImage:bg_tab forState:UIControlStateSelected barMetrics:UIBarMetricsDefault];
+    [self.segmentsBar setDividerImage:cornerLeft forLeftSegmentState:UIControlStateNormal rightSegmentState:UIControlStateSelected barMetrics:UIBarMetricsDefault];
+    [self.segmentsBar setDividerImage:cornerRight forLeftSegmentState:UIControlStateSelected rightSegmentState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+    [self.segmentsBar setBackgroundImage:bgUnselected forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+    [self.segmentsBar setBackgroundImage:bgTab forState:UIControlStateSelected barMetrics:UIBarMetricsDefault];
 }
 
 
@@ -285,44 +281,46 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
 #pragma mark event handlers
 
 - (void)setSelectedCategoryImageInSegmentControl:(UISegmentedControl *)segmentsBar AtIndex:(NSInteger)index {
-    UIImage *recent_highlighted, *face_highlighted, *bell_highlighted, *flower_highlighted, *car_highlighted, *characters_highlighted;
+    UIImage *recentHighlighted, *faceHighlighted, *bellHighlighted, *flowerHighlighted, *carHighlighted, *charactersHighlighted;
     UIImage *recent, *face, *bell, *flower, *car, *characters;
     
+    
+    recentHighlighted = [UIImage imageNamed:@"btn-recent-highlighted"];
+    faceHighlighted = [UIImage imageNamed:@"btn-face-highlighted"];
+    bellHighlighted = [UIImage imageNamed:@"btn-bell-highlighted"];
+    flowerHighlighted = [UIImage imageNamed:@"btn-flower-highlighted"];
+    carHighlighted = [UIImage imageNamed:@"btn-car-highlighted"];
+    charactersHighlighted = [UIImage imageNamed:@"btn-characters-highlighted"];
+    
+    recent = [UIImage imageNamed:@"btn-recent-normal"];
+    face = [UIImage imageNamed:@"btn-face-normal"];
+    bell = [UIImage imageNamed:@"btn-bell-normal"];
+    flower = [UIImage imageNamed:@"btn-flower-normal"];
+    car = [UIImage imageNamed:@"btn-car-normal"];
+    characters = [UIImage imageNamed:@"btn-characters-normal"];
+    
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 70000
     if ([UIImage instancesRespondToSelector:@selector(imageWithRenderingMode:)]) {
         
-        recent_highlighted = [[UIImage imageNamed:@"btn-recent-highlighted"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-        face_highlighted = [[UIImage imageNamed:@"btn-face-highlighted"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-        bell_highlighted = [[UIImage imageNamed:@"btn-bell-highlighted"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-        flower_highlighted = [[UIImage imageNamed:@"btn-flower-highlighted"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-        car_highlighted = [[UIImage imageNamed:@"btn-car-highlighted"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-        characters_highlighted = [[UIImage imageNamed:@"btn-characters-highlighted"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        recentHighlighted = [recentHighlighted imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        faceHighlighted = [faceHighlighted imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        bellHighlighted = [bellHighlighted imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        flowerHighlighted = [flowerHighlighted imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        carHighlighted = [carHighlighted imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        charactersHighlighted = [charactersHighlighted imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
         
-        recent = [[UIImage imageNamed:@"btn-recent-normal"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-        face = [[UIImage imageNamed:@"btn-face-normal"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-        bell = [[UIImage imageNamed:@"btn-bell-normal"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-        flower = [[UIImage imageNamed:@"btn-flower-normal"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-        car = [[UIImage imageNamed:@"btn-car-normal"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-        characters = [[UIImage imageNamed:@"btn-characters-normal"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-    } else {
-        recent_highlighted = [UIImage imageNamed:@"btn-recent-highlighted"];
-        face_highlighted = [UIImage imageNamed:@"btn-face-highlighted"];
-        bell_highlighted = [UIImage imageNamed:@"btn-bell-highlighted"];
-        flower_highlighted = [UIImage imageNamed:@"btn-flower-highlighted"];
-        car_highlighted = [UIImage imageNamed:@"btn-car-highlighted"];
-        characters_highlighted = [UIImage imageNamed:@"btn-characters-highlighted"];
-        
-        recent = [UIImage imageNamed:@"btn-recent-normal"];
-        face = [UIImage imageNamed:@"btn-face-normal"];
-        bell = [UIImage imageNamed:@"btn-bell-normal"];
-        flower = [UIImage imageNamed:@"btn-flower-normal"];
-        car = [UIImage imageNamed:@"btn-car-normal"];
-        characters = [UIImage imageNamed:@"btn-characters-normal"];
+        recent = [recent imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        face = [face imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        bell = [bell imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        flower = [flower imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        car = [car imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        characters = [characters imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
     }
+#endif
     
-    NSArray *imagesForSelectedSegments = @[recent_highlighted, face_highlighted, bell_highlighted, flower_highlighted, car_highlighted, characters_highlighted,
-                                           ];
-    NSArray *imagesForNonSelectedSegments = @[recent, face, bell, flower, car, characters,
-                                              ];
+    NSArray *imagesForSelectedSegments = @[recentHighlighted, faceHighlighted, bellHighlighted, flowerHighlighted, carHighlighted, charactersHighlighted];
+    NSArray *imagesForNonSelectedSegments = @[recent, face, bell, flower, car, characters];
+    
     for (int i = 0; i < self.segmentsBar.numberOfSegments; ++i) {
         [segmentsBar setImage:imagesForNonSelectedSegments[i] forSegmentAtIndex:i];
     }
