@@ -85,9 +85,15 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
 @property (nonatomic, strong) NSMutableArray *pageViews;
 @property (nonatomic, strong) NSString *category;
 
-@property (nonatomic, strong) QDPopupEmojiView *popupEmojiView;
+@property (nonatomic, strong) UIButton *sendButton;
 
+@property (nonatomic, strong) QDPopupEmojiView *popupEmojiView;
 @property (nonatomic, strong) UILabel *testLabel;
+
+@property (nonatomic, assign) CGFloat sendButtonWidth;
+@property (nonatomic, assign) CGFloat sendButtonHeight;
+@property (nonatomic, assign) CGFloat sendButtonMarginRight;
+@property (nonatomic, assign) CGFloat sendButtonMarginBottom;
 
 @end
 
@@ -99,6 +105,7 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
 @synthesize emojis = emojis_;
 @synthesize pageViews = pageViews_;
 @synthesize category = category_;
+@synthesize sendButton = sendButton_;
 
 - (NSDictionary *)emojis {
     if (!emojis_) {
@@ -131,11 +138,35 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
     return YES;
 }
 
+- (void)setQuickSendEnabled:(BOOL)quickSendEnabled
+{
+    if (quickSendEnabled) {
+        if (self.sendButton == nil) {
+            self.sendButton = [[UIButton alloc] initWithFrame:CGRectMake(0.f, 0.f, self.sendButtonWidth, self.sendButtonHeight)];
+            [self.sendButton setTitle:NSLocalizedString(@"Send", @"") forState:UIControlStateNormal];
+            self.sendButton.titleLabel.font = [UIFont systemFontOfSize:15.f];
+            
+            [self.sendButton addTarget:self action:@selector(send:) forControlEvents:UIControlEventTouchUpInside];
+            [self.sendButton setBackgroundImage:[[UIImage imageNamed:@"btn-send-highlighted"] resizableImageWithCapInsets:UIEdgeInsetsMake(4.f, 4.f, 4.f, 4.f)] forState:UIControlStateNormal];
+            [self addSubview:self.sendButton];
+        }
+    } else {
+        [self.sendButton removeFromSuperview];
+    }
+    _quickSendEnabled = quickSendEnabled;
+}
 
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
     if (self) {
+        self.sendButtonWidth = 54.f;
+        self.sendButtonHeight = 32.f;
+        self.sendButtonMarginRight = 4.f;
+        self.sendButtonMarginBottom = 5.f;
+        
+        _quickSendEnabled = NO;
+        
         self.category = segmentRecentName;
         self.backgroundColor = [UIColor colorWithIntegerValue:BACKGROUND_COLOR alpha:1.0];
         self.segmentsBar = [[UISegmentedControl alloc] initWithItems:@[
@@ -266,6 +297,15 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
                                                      pageControlSize.width,
                                                      pageControlSize.height));
     
+    self.pageControl.backgroundColor = [UIColor clearColor];
+    
+    if (_quickSendEnabled) {
+        CGRect sendButtonFrame = self.sendButton.frame;
+        sendButtonFrame.origin.x = self.bounds.size.width - self.sendButtonMarginRight - self.sendButtonWidth;
+        sendButtonFrame.origin.y = self.bounds.size.height - self.sendButtonHeight - (pageControlSize.height - self.sendButtonHeight) / 2.f;
+        self.sendButton.frame = sendButtonFrame;
+    }
+    
     self.scrollView.frame = CGRectMake(0,
                                      CGRectGetHeight(self.segmentsBar.bounds),
                                      CGRectGetWidth(self.bounds),
@@ -277,6 +317,17 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
     self.pageViews = [NSMutableArray array];
     [self setPage:currentPage];
 }
+
+
+#pragma mark - Send Button Action
+
+- (void)send:(UIButton *)sender
+{
+    if ([self.delegate respondsToSelector:@selector(emojiKeyBoardViewDidPressSendButton)]) {
+        [self.delegate emojiKeyBoardViewDidPressSendButton];
+    }
+}
+
 
 #pragma mark event handlers
 

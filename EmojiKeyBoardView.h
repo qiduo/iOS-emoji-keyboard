@@ -14,6 +14,7 @@
 
 @interface EmojiKeyBoardView : UIView <UIInputViewAudioFeedback>
 
+@property (nonatomic, assign) BOOL quickSendEnabled;
 @property (nonatomic, weak) id<EmojiKeyboardViewDelegate> delegate;
 
 @end
@@ -33,5 +34,7 @@
  @param emojiKeyBoardView EmojiKeyBoardView object on which user has tapped.
  */
 - (void)emojiKeyBoardViewDidPressBackspaceButton;
+
+- (void)emojiKeyBoardViewDidPressSendButton;
 
 @end
