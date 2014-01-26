@@ -16,7 +16,6 @@
 #define HighlightedEmojiViewWidth  76.f
 #define BackspaceButtonWidth       45.f
 
-#define DEFAULT_SELECTED_SEGMENT 0
 #define PAGE_CONTROL_INDICATOR_DIAMETER 6.0
 #define RECENT_EMOJIS_MAINTAINED_COUNT 40
 
@@ -84,6 +83,7 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
 @property (nonatomic, strong) NSDictionary *emojis;
 @property (nonatomic, strong) NSMutableArray *pageViews;
 @property (nonatomic, strong) NSString *category;
+@property (nonatomic, assign) NSInteger initialSelectedSegmentIndex;
 
 @property (nonatomic, strong) UIButton *sendButton;
 
@@ -167,7 +167,14 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
         
         _quickSendEnabled = NO;
         
-        self.category = segmentRecentName;
+        if ([[self recentEmojis] count] > 0) {
+            self.category = segmentRecentName;
+            self.initialSelectedSegmentIndex = 0;
+        } else {
+            self.category = @"People";
+            self.initialSelectedSegmentIndex = 1;
+        }
+        
         self.backgroundColor = [UIColor colorWithIntegerValue:BACKGROUND_COLOR alpha:1.0];
         self.segmentsBar = [[UISegmentedControl alloc] initWithItems:@[
                                                                        [UIImage imageNamed:@"btn-recent-normal"],
@@ -188,8 +195,8 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
         [self adjustSegmentsBar];
         
         [self.segmentsBar addTarget:self action:@selector(categoryChangedViaSegmentsBar:) forControlEvents:UIControlEventValueChanged];
-        [self setSelectedCategoryImageInSegmentControl:self.segmentsBar AtIndex:DEFAULT_SELECTED_SEGMENT];
-        self.segmentsBar.selectedSegmentIndex = DEFAULT_SELECTED_SEGMENT;
+        [self setSelectedCategoryImageInSegmentControl:self.segmentsBar AtIndex:self.initialSelectedSegmentIndex];
+        self.segmentsBar.selectedSegmentIndex = self.initialSelectedSegmentIndex;
         [self addSubview:self.segmentsBar];
         
         self.backspaceButton = [UIButton buttonWithType:UIButtonTypeCustom];
