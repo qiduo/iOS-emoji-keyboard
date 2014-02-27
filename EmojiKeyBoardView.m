@@ -86,9 +86,7 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
 @property (nonatomic, assign) NSInteger initialSelectedSegmentIndex;
 
 @property (nonatomic, strong) UIButton *sendButton;
-
 @property (nonatomic, strong) QDPopupEmojiView *popupEmojiView;
-@property (nonatomic, strong) UILabel *testLabel;
 
 @property (nonatomic, assign) CGFloat sendButtonWidth;
 @property (nonatomic, assign) CGFloat sendButtonHeight;
@@ -191,10 +189,18 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
         self.segmentsBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         
         self.segmentsBar.tintColor = [UIColor clearColor];
+        [self _initSegmentsBar];
         
-        [self adjustSegmentsBar];
-        
+        if (SYSTEM_VERSION_GREATER_THAN(@"7")) {
+            UILongPressGestureRecognizer *longPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(segmentsBarDidHighlight:)];
+            longPressGesture.minimumPressDuration = 0.01f;
+            longPressGesture.numberOfTouchesRequired = 1;
+            [self.segmentsBar addGestureRecognizer:longPressGesture];
+        } else {
+            [self.segmentsBar addTarget:self action:@selector(categoryChangedViaSegmentsBar:) forControlEvents:UIControlEventValueChanged];
+        }
         [self.segmentsBar addTarget:self action:@selector(categoryChangedViaSegmentsBar:) forControlEvents:UIControlEventValueChanged];
+        
         [self setSelectedCategoryImageInSegmentControl:self.segmentsBar AtIndex:self.initialSelectedSegmentIndex];
         self.segmentsBar.selectedSegmentIndex = self.initialSelectedSegmentIndex;
         [self addSubview:self.segmentsBar];
@@ -252,7 +258,7 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
     [self purgePageViews];
 }
 
-- (void)adjustSegmentsBar
+- (void)_initSegmentsBar
 {
     UIImage *separator = [UIImage imageNamed:@"bg-icons-separator"];
     UIImage *cornerLeft = [UIImage imageNamed:@"bg-corner-left"];
@@ -260,21 +266,18 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
     UIImage *bgUnselected = [UIImage imageNamed:@"bg-unselected-center"];
     UIImage *bgTab = [UIImage imageNamed:@"bg-tab"];
     
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 70000
-    if ([UIImage instancesRespondToSelector:@selector(imageWithRenderingMode:)]) {
-        separator = [separator imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-        cornerLeft = [cornerLeft imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-        cornerRight = [cornerRight imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-        bgUnselected = [bgUnselected imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-        bgTab = [bgTab imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-    }
-#endif
-    
     [self.segmentsBar setDividerImage:separator forLeftSegmentState:UIControlStateNormal rightSegmentState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
     [self.segmentsBar setDividerImage:cornerLeft forLeftSegmentState:UIControlStateNormal rightSegmentState:UIControlStateSelected barMetrics:UIBarMetricsDefault];
     [self.segmentsBar setDividerImage:cornerRight forLeftSegmentState:UIControlStateSelected rightSegmentState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+    
     [self.segmentsBar setBackgroundImage:bgUnselected forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
     [self.segmentsBar setBackgroundImage:bgTab forState:UIControlStateSelected barMetrics:UIBarMetricsDefault];
+    
+    if (SYSTEM_VERSION_GREATER_THAN(@"7")) {
+        [self.segmentsBar setDividerImage:cornerLeft forLeftSegmentState:UIControlStateNormal rightSegmentState:UIControlStateHighlighted barMetrics:UIBarMetricsDefault];
+        [self.segmentsBar setDividerImage:cornerRight forLeftSegmentState:UIControlStateHighlighted rightSegmentState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
+        [self.segmentsBar setBackgroundImage:bgTab forState:UIControlStateHighlighted barMetrics:UIBarMetricsDefault];
+    }
 }
 
 
@@ -339,8 +342,8 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
 #pragma mark event handlers
 
 - (void)setSelectedCategoryImageInSegmentControl:(UISegmentedControl *)segmentsBar AtIndex:(NSInteger)index {
-    UIImage *recentHighlighted, *faceHighlighted, *bellHighlighted, *flowerHighlighted, *carHighlighted, *charactersHighlighted;
-    UIImage *recent, *face, *bell, *flower, *car, *characters;
+    static UIImage *recentHighlighted, *faceHighlighted, *bellHighlighted, *flowerHighlighted, *carHighlighted, *charactersHighlighted;
+    static UIImage *recent, *face, *bell, *flower, *car, *characters;
     
     
     recentHighlighted = [UIImage imageNamed:@"btn-recent-highlighted"];
@@ -390,15 +393,41 @@ NSString *const RecentUsedEmojiCharactersKey = @"RecentUsedEmojiCharactersKey";
     [[UIDevice currentDevice] playInputClick];
     
     NSArray *categoryList = @[segmentRecentName, @"People", @"Objects", @"Nature", @"Places", @"Symbols"];
-    
+
     self.category = categoryList[sender.selectedSegmentIndex];
     [self setSelectedCategoryImageInSegmentControl:sender AtIndex:sender.selectedSegmentIndex];
+    
+    UISegmentedControl *segmentedControl = (UISegmentedControl *)sender;
+    
+    for (UIView *segment in [segmentedControl subviews]) {
+        [segment.layer removeAllAnimations];
+        
+        for (UIView *view in [segment subviews]) {
+            if ([view isKindOfClass:[UILabel class]]) {
+                [view.layer removeAllAnimations];
+            }
+        }
+    }
     
     self.pageControl.currentPage = 0;
     // This triggers layoutSubviews
     // Choose a number that can never be equal to numberOfPages of pagecontrol else
     // layoutSubviews would not be called
     self.pageControl.numberOfPages = 100;
+}
+
+- (void)segmentsBarDidHighlight:(UILongPressGestureRecognizer *)tapGesture
+{
+    if (tapGesture.state == UIGestureRecognizerStateBegan) {
+        CGPoint location = [tapGesture locationInView:tapGesture.view];
+        CGFloat segmentWidth = self.segmentsBar.bounds.size.width / self.segmentsBar.numberOfSegments;
+        NSInteger index = location.x / ceilf(segmentWidth);
+        if (index >= self.segmentsBar.numberOfSegments) {
+            return;
+        }
+        [self.segmentsBar setSelectedSegmentIndex:index];
+        [self categoryChangedViaSegmentsBar:self.segmentsBar];
+    }
 }
 
 - (void)pageControlTouched:(DDPageControl *)sender {
